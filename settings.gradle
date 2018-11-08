@@ -1,0 +1,5 @@
+rootProject.name = 'deploy-utils'
+
+include 'dpy-common'
+include 'dpy-packager'
+

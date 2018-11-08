@@ -1,0 +1,96 @@
+group = project_group
+version = project_version
+
+ext {
+    types = [
+            "dpy-common"  : "lib",
+            "dpy-packager": "exe"
+    ]
+    environment = "snapshot"
+}
+
+allprojects {
+    repositories {
+
+        mavenLocal()
+        mavenCentral()
+        maven { url = 'http://maven.aliyun.com/nexus/content/groups/public/' }
+    }
+}
+
+subprojects { prj ->
+
+    apply plugin: 'java'
+    apply from: "$rootProject.projectDir/dependencies.gradle"
+    apply from: "$rootProject.projectDir/utils.gradle"
+    group = project_group
+    version = project_version
+    sourceCompatibility = project_jdk
+    targetCompatibility = project_jdk
+
+    /*设置编译和执行的编码UTF-8*/
+    [compileJava, compileTestJava, javadoc]*.options*.encoding = 'UTF-8'
+    tasks.withType(JavaExec) {
+        jvmArgs += ['-Dfile.encoding=UTF-8']
+    }
+    /*分环境设置打包的版本标识*/
+    gradle.taskGraph.whenReady { graph ->
+        if (project.hasProperty('env')) environment = project['env']
+        version += "-${environment}"
+    }
+    /* 可运行项目 打包配置 */
+    if (types[prj.name] == 'exe') {
+
+        apply plugin: 'application'
+        applicationDefaultJvmArgs = ['-Dfile.encoding=UTF-8']
+        sourceSets.main.resources.srcDirs(
+                ["src/main/resources", "src/main/resources/profile/${environment}"])// resources目录
+        applicationDistribution.from(sourceSets.main.resources.srcDirs) {// 打包resources
+            into ""
+            exclude "profile"
+        }
+        startScripts { //CLASSPATH增加APP_HOME
+            doLast {
+                unixScript.text = unixScript.text.replace('CLASSPATH=\$APP_HOME/', 'CLASSPATH=\$APP_HOME:\$APP_HOME/')
+                windowsScript.text = windowsScript.text.replace('CLASSPATH=%APP_HOME%\\', 'CLASSPATH=%APP_HOME%;%APP_HOME%\\')
+            }
+        }
+    }
+
+    jar {
+        excludes = ['config', 'profile', 'env.properties'] /* 打JAR包时忽略配置文件 */
+        doFirst { /* 生成 manifest 文件 */
+            manifest = defaultManifest([project: prj, projectVendor: project_vendor])
+        }
+    }
+    configurations {
+        /* 依赖中需要忽略的包 */
+        all*.exclude module: 'slf4j-log4j12'
+        all*.exclude module: 'commons-logging-api'
+    }
+}
+
+/* 发布 */
+task release(type: Zip, dependsOn: [
+        project(':dpy-packager').getTasksByName('distZip', true)
+]) {
+    if (project.hasProperty('env')) environment = project['env']
+    baseName = "${rootProject.name}-${rootProject.version}-${environment}"
+    destinationDir = file("$buildDir/distributions")
+    doFirst {
+        println "delete : " + fileTree(dir: "$buildDir/distributions/", include: "*.zip").files
+        delete fileTree(dir: "$buildDir/distributions/", include: "*.zip")
+    }
+    def list = []
+    types.each { entry ->
+        if (entry.value == 'exe')
+            list.add(fileTree(dir: project(':' + entry.key).distsDir, include: "*.zip"))
+    }
+    into('pmts-projects') {
+        from list
+        from fileTree(rootProject.file("scripts"))
+    }
+    doLast {
+        println "output : " + fileTree(dir: "$buildDir/distributions/", include: "*.zip").files
+    }
+}

@@ -1,0 +1,11 @@
+archivesBaseName = 'dpy-packager'
+
+dependencies {
+    compile(
+            project(":dpy-common")
+    )
+    testCompile libraries."junit"
+}
+
+mainClassName = 'cn.onebank.pmts.batch.main.SchedulerBootStrap'
+

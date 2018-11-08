@@ -1,0 +1,6 @@
+archivesBaseName = 'dpy-common'
+
+dependencies {
+    testCompile libraries."junit"
+}
+
