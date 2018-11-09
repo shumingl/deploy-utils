@@ -1,6 +1,19 @@
 archivesBaseName = 'dpy-common'
 
 dependencies {
+    compile(
+            libraries."spring-context",
+            libraries."slf4j-api",
+            libraries."logback-core",
+            libraries."logback-access",
+            libraries."logback-classic",
+            libraries."logback-ext-spring",
+            libraries."jackson-databind",
+            libraries."joda-time",
+            libraries."commons-codec",
+            libraries."jsch",
+            libraries."freemarker"
+    )
     testCompile libraries."junit"
 }
 
