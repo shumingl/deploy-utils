@@ -12,7 +12,9 @@ dependencies {
             libraries."joda-time",
             libraries."commons-codec",
             libraries."jsch",
-            libraries."freemarker"
+            libraries."freemarker",
+            libraries."poi-oobin",
+            libraries."poi-ooxml"
     )
     testCompile libraries."junit"
 }
