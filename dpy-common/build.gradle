@@ -14,7 +14,8 @@ dependencies {
             libraries."jsch",
             libraries."freemarker",
             libraries."poi-oobin",
-            libraries."poi-ooxml"
+            libraries."poi-ooxml",
+            libraries."h2database"
     )
     testCompile libraries."junit"
 }

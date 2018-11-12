@@ -1,17 +1,21 @@
 package com.iwill.deploy.common.excel;
 
 import com.iwill.deploy.common.utils.string.StringUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
 public class ExcelHelper {
 
+    private static final Logger logger = LoggerFactory.getLogger(ExcelHelper.class);
+
     public static String[][] getArray(String filename, String sheetName) {
         try (ExcelWorkBook workBook = new ExcelWorkBook(filename)) {
             ExcelWorkSheet sheet = workBook.getWorkSheet(sheetName);
-            return sheet.getDataArray();
+            return sheet.getUsedRangeData(20, 12);
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("读取Excel数据异常", e);
         }
         return null;
     }
